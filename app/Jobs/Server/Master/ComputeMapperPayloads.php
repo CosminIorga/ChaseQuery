@@ -35,6 +35,12 @@ class ComputeMapperPayloads extends Job
     protected $databaseConnections = [];
 
     /**
+     * Array of TablesInformationModel
+     * @var array
+     */
+    protected $tablesInformation = [];
+
+    /**
      * ComputeMapperPayloads constructor.
      * @param CQueryModel $CQueryModel
      */
@@ -62,6 +68,9 @@ class ComputeMapperPayloads extends Job
 
         /* Get tables information */
         $this->getTablesInformation();
+
+        /* Compute payloads */
+        $this->computePayloads();
     }
 
     /**
@@ -76,7 +85,20 @@ class ComputeMapperPayloads extends Job
         $this->databaseConnections = dispatch($job);
     }
 
+    /**
+     * Function used to get tables information
+     */
     protected function getTablesInformation()
+    {
+        $job = (new GetTablesInformation($this->CQueryModel->getTables()))
+            ->onQueue(GetTablesInformation::QUEUE_NAME)
+            ->onConnection(GetTablesInformation::CONNECTION);
+
+        $this->tablesInformation = dispatch($job);
+    }
+
+
+    protected function computePayloads()
     {
 
     }

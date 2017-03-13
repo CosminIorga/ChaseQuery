@@ -15,6 +15,7 @@ use Exception;
 class ConnectionModelException extends Exception implements DefaultException
 {
     const MISSING_CONNECTION_ID_KEY = "Missing connection 'id' key";
+    const NO_CONNECTION_WITH_GIVEN_ID = "No connection with given 'id' exists ";
 
     public function report()
     {
