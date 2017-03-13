@@ -18,9 +18,18 @@ class ResponseModel extends NonPersistentModel
 
     const RESPONSE_STATUS_FIELD = "status";
     const RESPONSE_CONTENT_FIELD = "content";
+    const RESPONSE_MESSAGE_FIELD = "message";
 
     /**
-     * Function used to set message status as "success"
+     * ResponseModel constructor.
+     */
+    public function __construct()
+    {
+        parent::__construct([]);
+    }
+
+    /**
+     * Function used to set response status as "success"
      * @return ResponseModel
      */
     public function success(): self
@@ -31,12 +40,24 @@ class ResponseModel extends NonPersistentModel
     }
 
     /**
-     * Function used to set message status as "failure"
+     * Function used to set response status as "failure"
      * @return ResponseModel
      */
     public function failure(): self
     {
         $this->setStatus(false);
+
+        return $this;
+    }
+
+    /**
+     * Function used to set response message
+     * @param string $message
+     * @return ResponseModel
+     */
+    public function message(string $message): self
+    {
+        $this->setMessage($message);
 
         return $this;
     }
@@ -60,6 +81,15 @@ class ResponseModel extends NonPersistentModel
     protected function setStatus(bool $status)
     {
         $this->setAttribute(self::RESPONSE_STATUS_FIELD, $status);
+    }
+
+    /**
+     * Internal function used to set message to given string
+     * @param string $message
+     */
+    protected function setMessage(string $message)
+    {
+        $this->setAttribute(self::RESPONSE_MESSAGE_FIELD, $message);
     }
 
     /**

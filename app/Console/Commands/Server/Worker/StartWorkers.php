@@ -6,10 +6,10 @@
  * Time: 16:45
  */
 
-namespace App\Console\Commands\Server;
+namespace App\Console\Commands\Server\Worker;
 
 
-use App\Jobs\Server\StartWorkersJob;
+use App\Jobs\Server\Worker\StartWorkersJob;
 use Illuminate\Console\Command;
 
 class StartWorkers extends Command

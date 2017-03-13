@@ -6,7 +6,7 @@
  * Time: 17:40
  */
 
-namespace App\Jobs\Server\Tasks;
+namespace App\Jobs\Server\Worker\Tasks;
 
 
 use App\Jobs\Job;

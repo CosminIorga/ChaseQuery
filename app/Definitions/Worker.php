@@ -8,8 +8,8 @@
 
 namespace App\Definitions;
 
-use App\Jobs\Server\Tasks\Mapper;
-use App\Jobs\Server\Tasks\Reducer;
+use App\Jobs\Server\Worker\Tasks\Mapper;
+use App\Jobs\Server\Worker\Tasks\Reducer;
 
 /**
  * Class Worker

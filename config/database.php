@@ -53,6 +53,20 @@ return [
             'engine' => null,
         ],
 
+        'database_read_1' => [
+            'id' => 1,
+            'host' => env('DB_READ_1_HOST', '127.0.0.1'),
+            'port' => env('DB_READ_1_PORT', '3306'),
+            'database' => env('DB_READ_1_DATABASE', 'forge'),
+            'username' => env('DB_READ_1_USERNAME', 'forge'),
+            'password' => env('DB_READ_1_PASSWORD', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+        ],
+
         'pgsql' => [
             'driver' => 'pgsql',
             'host' => env('DB_HOST', '127.0.0.1'),

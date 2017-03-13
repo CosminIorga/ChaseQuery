@@ -13,7 +13,6 @@ use App\Models\NonPersistentModel;
 
 class CQueryModel extends NonPersistentModel
 {
-
     const QUERY = "query";
     const TABLES = "tables";
     const GROUP_COLUMNS = "group_columns";
@@ -40,24 +39,30 @@ class CQueryModel extends NonPersistentModel
      */
     protected $throwExceptionOnValidationFail = true;
 
-
     /**
-     * Function used to retrieve queries that result from given data
+     * Get tables
      * @return array
      */
-    public function getQueries(): array
+    public function getTables(): array
     {
-        if (empty($this->computedQueries)) {
-            $this->computeQueries();
-        }
-
-        return $this->computedQueries;
+        return $this->attributes[self::TABLES];
     }
 
-    protected function computeQueries()
+    /**
+     * Get base query
+     * @return string
+     */
+    public function getBaseQuery(): string
     {
+        return $this->attributes[self::QUERY];
+    }
 
-
-
+    /**
+     * Get group columns
+     * @return array
+     */
+    public function getGroupColumns(): array
+    {
+        return $this->attributes[self::GROUP_COLUMNS];
     }
 }

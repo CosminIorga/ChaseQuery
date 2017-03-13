@@ -6,7 +6,7 @@
  * Time: 17:05
  */
 
-namespace App\Jobs\Server;
+namespace App\Jobs\Server\Worker;
 
 
 use App\Definitions\Worker;
