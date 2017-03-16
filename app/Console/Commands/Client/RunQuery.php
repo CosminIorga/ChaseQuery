@@ -15,12 +15,6 @@ use Illuminate\Console\Command;
 class RunQuery extends Command
 {
     /**
-     * Queue name
-     * @var string
-     */
-    const QUEUE_NAME = 'RunQuery';
-
-    /**
      * The name and signature of the console command.
      * @var string
      */

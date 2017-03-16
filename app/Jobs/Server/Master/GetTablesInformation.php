@@ -6,11 +6,13 @@
  * Time: 12:41
  */
 
-namespace Jobs\Server\Master;
+namespace App\Jobs\Server\Master;
 
 
 use App\Jobs\Job;
-use Models\TablesInformationModel;
+use App\Models\CQueryModel;
+use App\Models\TableInformationModel;
+use App\Repositories\CommonRepository;
 
 class GetTablesInformation extends Job
 {
@@ -33,10 +35,10 @@ class GetTablesInformation extends Job
     protected $tablesInformationFileFullPath;
 
     /**
-     * Array used to store given table names
-     * @var array
+     * Variable used to store the CQueryModel
+     * @var CQueryModel
      */
-    protected $tableNames = [];
+    protected $CQueryModel = [];
 
     /**
      * Array used to store tables information
@@ -45,23 +47,28 @@ class GetTablesInformation extends Job
     protected $tablesInformation = [];
 
     /**
-     * GetTablesInformation constructor.
-     * @param array $tableNames
+     * Repository containing useful queries
+     * @var CommonRepository
      */
-    public function __construct(array $tableNames)
+    protected $commonRepository;
+    /**
+     * GetTablesInformation constructor.
+     * @param CQueryModel $CQueryModel
+     */
+    public function __construct(CQueryModel $CQueryModel)
     {
-        $this->init($tableNames);
+        $this->init($CQueryModel);
 
         $this->computeTablesInformationFilePath();
     }
 
     /**
      * Function used to initialize fields
-     * @param array $tableNames
+     * @param CQueryModel $CQueryModel
      */
-    protected function init(array $tableNames)
+    protected function init(CQueryModel $CQueryModel)
     {
-        $this->tableNames = $tableNames;
+        $this->CQueryModel = $CQueryModel;
     }
 
     /**
@@ -74,13 +81,19 @@ class GetTablesInformation extends Job
 
     /**
      * Job runner
+     * @param CommonRepository $commonRepository
      * @return array
      */
-    public function handle()
-    {
+    public function handle(
+        CommonRepository $commonRepository
+    ) {
+        $this->commonRepository = $commonRepository;
+
         $allTablesInformation = $this->getTablesInformationFromFile();
 
-        return $this->parseTablesInformation($allTablesInformation);
+        $tablesInformation = $this->parseTablesInformation($allTablesInformation);
+
+        return $this->refineTablesInformation($tablesInformation);
     }
 
     /**
@@ -88,9 +101,9 @@ class GetTablesInformation extends Job
      */
     protected function getTablesInformationFromFile(): array
     {
-        $connections = parse_ini_file($this->tablesInformationFileFullPath, true);
+        $tables = parse_ini_file($this->tablesInformationFileFullPath, true);
 
-        return $connections;
+        return $tables;
     }
 
     /**
@@ -100,12 +113,48 @@ class GetTablesInformation extends Job
      */
     protected function parseTablesInformation(array $allTablesInformation): array
     {
-        $tablesInformation = array_intersect_key($allTablesInformation, array_flip($this->tableNames));
+        $tablesInformation = array_intersect_key($allTablesInformation, array_flip($this->CQueryModel->getTables()));
 
+        $tablesInformationModels = [];
         array_walk($tablesInformation, function ($tableInformation) use (&$tablesInformationModels) {
-            $tablesInformationModels[] = new TablesInformationModel($tableInformation);
+            $tablesInformationModels[] = new TableInformationModel($tableInformation);
         });
 
         return $tablesInformationModels;
     }
+
+    /**
+     * Function used to check which partitions are necessary for current query
+     * @param $tablesInformation
+     * @return array
+     */
+    protected function refineTablesInformation($tablesInformation): array
+    {
+        array_walk($tablesInformation, function (
+            /** @var TableInformationModel $tableInformation */
+            &$tableInformation
+        ) {
+            /* Skip checking for partitions if table is not partitioned */
+            if (!$tableInformation->isPartitioned()) {
+                return;
+            }
+
+            /* Compute complete query */
+            $query = $this->CQueryModel->injectTableIntoQuery(
+                $tableInformation->getAttribute(TableInformationModel::TABLE_NAME)
+            );
+
+            /* Get used partitions for each table */
+            $partitions = $this->commonRepository->getUsedPartitionsForQuery($query);
+
+            $partitions = explode(',', $partitions);
+
+            $tableInformation->setUsedTablePartitions($partitions);
+        });
+
+        return $tablesInformation;
+    }
+
+
+
 }

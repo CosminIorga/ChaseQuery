@@ -6,20 +6,23 @@
  * Time: 12:41
  */
 
-namespace Jobs\Client;
+namespace App\Jobs\Client;
 
 
 use App\Definitions\Worker;
+use App\Interfaces\Payload;
 use App\Jobs\Job;
 use App\Models\ResponseModel as Response;
-use Exceptions\TablesException;
 use GearmanClient;
 use GearmanTask;
-use Jobs\Server\Master\ComputeMapperPayloads;
-use Models\CQueryModel;
+use App\Jobs\Server\Master\ComputeMapperPayloads;
+use App\Models\CQueryModel;
 
 class RunQueryJob extends Job
 {
+    const CONNECTION = "sync";
+    const QUEUE_NAME = "runQuery";
+
     /**
      * Variable used store the CQuery model
      * @var CQueryModel
@@ -111,10 +114,12 @@ class RunQueryJob extends Job
             $this->dispatchPayloads($mapperPayloads);
 
             /* Create "reducer" payloads based on CQuery Model and computed data */
-            $reducerPayloads = $this->createReducerPayloads();
+            //$reducerPayloads = $this->createReducerPayloads();
 
             /* Dispatch "reducer" payloads to Gearman workers */
-            $this->dispatchPayloads($reducerPayloads);
+            //$this->dispatchPayloads($reducerPayloads);
+
+            return $this->mapperData;
 
             /* Return reduced data */
             $response = (new Response())
@@ -158,9 +163,9 @@ class RunQueryJob extends Job
 
     /**
      * Function used to
-     * @param $payloads
+     * @param array $payloads
      */
-    protected function dispatchPayloads($payloads)
+    protected function dispatchPayloads(array $payloads)
     {
         array_walk($payloads, function (
             /** @var Payload $payload */

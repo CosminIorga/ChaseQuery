@@ -13,8 +13,9 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
-        Commands\Server\StartWorkers::class,
+        Commands\Server\Worker\StartWorkers::class,
         Commands\Client\RunQuery::class,
+        Commands\Test::class
     ];
 
     /**

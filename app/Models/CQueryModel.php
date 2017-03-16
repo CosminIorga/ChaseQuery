@@ -6,16 +6,15 @@
  * Time: 15:52
  */
 
-namespace Models;
+namespace App\Models;
 
 
-use App\Models\NonPersistentModel;
 
 class CQueryModel extends NonPersistentModel
 {
     const QUERY = "query";
     const TABLES = "tables";
-    const GROUP_COLUMNS = "group_columns";
+    const GROUP_COLUMNS = "groupColumns";
 
     /**
      * Validation rules
@@ -38,6 +37,19 @@ class CQueryModel extends NonPersistentModel
      * @var bool
      */
     protected $throwExceptionOnValidationFail = true;
+
+    /**
+     * Function called before validating input data and filling attributes
+     * @param array $attributes
+     */
+    protected function initBefore(array $attributes)
+    {
+        $regex = "regex:/\b" . config('common.base_query_table_placeholder'). "\b/";
+
+        /* Apply regex validation for "query" attribute */
+        $this->rules[self::QUERY] .= "|$regex";
+    }
+
 
     /**
      * Get tables
@@ -64,5 +76,28 @@ class CQueryModel extends NonPersistentModel
     public function getGroupColumns(): array
     {
         return $this->attributes[self::GROUP_COLUMNS];
+    }
+
+    /**
+     * Get table placeholder from config
+     * @return string
+     */
+    public function getTablePlaceholder(): string
+    {
+        /* Get table placeholder */
+        return config('common.base_query_table_placeholder');
+    }
+
+    /**
+     * Function used to retrieve base query with given table name
+     * @param string $table
+     * @return string
+     */
+    public function injectTableIntoQuery(string $table): string
+    {
+        /* Get table placeholder */
+        $tablePlaceholder = $this->getTablePlaceholder();
+
+        return str_replace($tablePlaceholder, $table, $this->getBaseQuery());
     }
 }

@@ -67,7 +67,7 @@ class ResponseModel extends NonPersistentModel
      * @param mixed $content
      * @return ResponseModel
      */
-    public function content(mixed $content): self
+    public function content($content): self
     {
         $this->setContent($content);
 

@@ -6,7 +6,7 @@
  * Time: 14:15
  */
 
-namespace Exceptions;
+namespace App\Exceptions;
 
 
 use App\Interfaces\DefaultException;

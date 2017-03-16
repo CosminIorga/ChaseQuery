@@ -45,9 +45,29 @@ class NonPersistentModel implements Arrayable, Jsonable
             }
         });
 
+        $this->initBefore($attributes);
+
         $this->validate($attributes);
 
         $this->fill($attributes);
+
+        $this->initAfter($attributes);
+    }
+
+    /**
+     * Function called before validating input data and filling attributes
+     * @param array $attributes
+     */
+    protected function initBefore(array $attributes)
+    {
+    }
+
+    /**
+     * Function called after validating input data and filling attributes
+     * @param array $attributes
+     */
+    protected function initAfter(array $attributes)
+    {
     }
 
     /**
@@ -68,13 +88,11 @@ class NonPersistentModel implements Arrayable, Jsonable
      * @param mixed $value
      * @return NonPersistentModel
      */
-    public function setAttribute(string $attribute, mixed $value): self
+    public function setAttribute(string $attribute, $value): self
     {
-        $this->validate([
-            $attribute => $value
-        ]);
-
         $this->attributes[$attribute] = $value;
+
+        $this->validate($this->getAttributes());
 
         return $this;
     }
@@ -87,12 +105,10 @@ class NonPersistentModel implements Arrayable, Jsonable
     public function setAttributes(array $attributes): self
     {
         array_walk($attributes, function ($value, $attribute) {
-            $this->validate([
-                $attribute => $value
-            ]);
-
             $this->setAttribute($attribute, $value);
         });
+
+        $this->validate($this->getAttributes());
 
         return $this;
     }
@@ -102,7 +118,7 @@ class NonPersistentModel implements Arrayable, Jsonable
      * @param string $key
      * @return mixed
      */
-    public function getAttribute(string $key): mixed
+    public function getAttribute(string $key)
     {
         return $this->attributes[$key] ?? null;
     }

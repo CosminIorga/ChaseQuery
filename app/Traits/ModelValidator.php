@@ -9,7 +9,7 @@
 namespace App\Traits;
 
 
-use Exceptions\ModelValidationException;
+use App\Exceptions\ModelValidationException;
 
 trait ModelValidator
 {
@@ -47,7 +47,7 @@ trait ModelValidator
             $this->errors = $v->errors()->all();
 
             if ($this->throwExceptionOnValidationFail) {
-                throw new ModelValidationException($this->getErrors());
+                throw new ModelValidationException(implode(' ', $this->getErrors()));
             }
 
             return false;
