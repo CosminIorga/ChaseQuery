@@ -17,6 +17,8 @@ class DatabaseModel extends NonPersistentModel
      * Model attributes
      */
     const DATABASE_ID = "id";
+    const DATABASE_DRIVER = 'driver';
+    const DATABASE_NAME = "name";
     const DATABASE_LOAD = "load";
     const DATABASE_FINAL_LOAD = "final_load";
     const DATABASE_HOST = "host";
@@ -34,6 +36,7 @@ class DatabaseModel extends NonPersistentModel
      */
     const ALLOWED_ATTRIBUTES = [
         self::DATABASE_ID,
+        self::DATABASE_NAME,
         self::DATABASE_LOAD,
         self::DATABASE_FINAL_LOAD,
         self::DATABASE_HOST,
@@ -53,6 +56,8 @@ class DatabaseModel extends NonPersistentModel
      */
     protected $rules = [
         self::DATABASE_ID => 'required',
+        self::DATABASE_NAME => 'required',
+        self::DATABASE_DRIVER => 'required|string',
         self::DATABASE_HOST => 'required|string',
         self::DATABASE_PORT => 'required|integer',
         self::DATABASE_USERNAME => 'required|string',
@@ -109,13 +114,15 @@ class DatabaseModel extends NonPersistentModel
         $allDatabaseConfigs = config('database.connections');
 
         $attributes = [];
-        array_walk($allDatabaseConfigs, function ($databaseConfig) use (&$attributes, $databaseId) {
+        array_walk($allDatabaseConfigs, function ($databaseConfig, $databaseName) use (&$attributes, $databaseId) {
             if (!array_key_exists(self::DATABASE_ID, $databaseConfig)) {
                 return;
             }
 
             if ($databaseId == $databaseConfig[self::DATABASE_ID]) {
-                $attributes = $databaseConfig;
+                $attributes = array_merge($databaseConfig, [
+                    self::DATABASE_NAME => $databaseName
+                ]);
             }
         });
 
@@ -173,5 +180,15 @@ class DatabaseModel extends NonPersistentModel
     public function getLoad(): float
     {
         return $this->attributes[self::DATABASE_FINAL_LOAD];
+    }
+
+
+    /**
+     * Function used to return only the database config options
+     * @return string
+     */
+    public function getDatabaseName(): string
+    {
+        return $this->getAttribute(self::DATABASE_NAME);
     }
 }

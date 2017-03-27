@@ -12,7 +12,9 @@ namespace App\Jobs\Client;
 use App\Definitions\Worker;
 use App\Interfaces\Payload;
 use App\Jobs\Job;
+use App\Jobs\Server\Master\ComputeReducerPayloads;
 use App\Models\ResponseModel as Response;
+use App\Models\ReturnDataModel;
 use GearmanClient;
 use GearmanTask;
 use App\Jobs\Server\Master\ComputeMapperPayloads;
@@ -107,31 +109,36 @@ class RunQueryJob extends Job
     public function handle()
     {
         try {
+            /* Start timer for performance benchmarks */
+            $startTime = microtime(true);
+
             /* Create "mapper" payloads based on CQuery Model */
             $mapperPayloads = $this->createMapperPayloads();
 
             /* Dispatch "mapper" payloads to Gearman workers */
-            $this->dispatchPayloads($mapperPayloads);
+            $mapperTime = $this->dispatchPayloads($mapperPayloads);
 
             /* Create "reducer" payloads based on CQuery Model and computed data */
-            //$reducerPayloads = $this->createReducerPayloads();
+            $reducerPayloads = $this->createReducerPayloads();
 
             /* Dispatch "reducer" payloads to Gearman workers */
-            //$this->dispatchPayloads($reducerPayloads);
+            $reducerTime = $this->dispatchPayloads($reducerPayloads);
 
-            return $this->mapperData;
+            /* Compute total operations time */
+            $endTime = microtime(true);
+            $totalTime = $endTime - $startTime;
 
             /* Return reduced data */
             $response = (new Response())
                 ->success()
-                ->content([
-                    "times" => [
-                        "map" => "",
-                        "reduce" => "",
-                        "total" => ""
-                    ],
-                    "data" => $this->reducerData
-                ]);
+                ->content(new ReturnDataModel(
+                    $mapperTime,
+                    $reducerTime,
+                    $totalTime,
+                    $this->mapperData,
+                    $this->reducerData
+                ));
+
         } catch (\Exception $exception) {
             $response = (new Response())
                 ->failure()
@@ -146,7 +153,7 @@ class RunQueryJob extends Job
      * Small function used to create mapper payloads
      * @return array
      */
-    protected function createMapperPayloads()
+    protected function createMapperPayloads(): array
     {
         $job = (new ComputeMapperPayloads($this->cQueryModel))
             ->onQueue(ComputeMapperPayloads::QUEUE_NAME)
@@ -155,17 +162,26 @@ class RunQueryJob extends Job
         return dispatch($job);
     }
 
-    protected function createReducerPayloads()
+    /**
+     * Small function used to create reducer payloads
+     * @return array
+     */
+    protected function createReducerPayloads(): array
     {
+        $job = (new ComputeReducerPayloads($this->mapperData, $this->cQueryModel))
+            ->onQueue(ComputeReducerPayloads::QUEUE_NAME)
+            ->onConnection(ComputeReducerPayloads::CONNECTION);
 
+        return dispatch($job);
     }
 
 
     /**
      * Function used to
      * @param array $payloads
+     * @return float
      */
-    protected function dispatchPayloads(array $payloads)
+    protected function dispatchPayloads(array $payloads): float
     {
         array_walk($payloads, function (
             /** @var Payload $payload */
@@ -180,5 +196,11 @@ class RunQueryJob extends Job
                 $index
             );
         });
+
+        $start = microtime(true);
+        $this->gearmanClient->runTasks();
+        $end = microtime(true);
+
+        return $end - $start;
     }
 }

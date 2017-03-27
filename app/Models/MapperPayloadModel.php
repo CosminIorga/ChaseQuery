@@ -16,11 +16,15 @@ class MapperPayloadModel extends NonPersistentModel implements Payload
 {
 
     /**
-     * Variables
+     * Model attributes
      */
     const PAYLOAD_QUERY = "payload_query";
     const PAYLOAD_DATABASE_INFO = "payload_database_info";
 
+    /**
+     * Validation rules
+     * @var array
+     */
     protected $rules = [
         self::PAYLOAD_QUERY => 'required|string'
     ];
@@ -59,4 +63,23 @@ class MapperPayloadModel extends NonPersistentModel implements Payload
     {
         return serialize($this);
     }
+
+    /**
+     * Getter for payload_query
+     * @return string
+     */
+    public function getPayloadQuery(): string
+    {
+        return $this->getAttribute(self::PAYLOAD_QUERY);
+    }
+
+    /**
+     * Getter for database_config
+     * @return DatabaseModel
+     */
+    public function getDatabaseConfig(): DatabaseModel
+    {
+        return $this->getAttribute(self::PAYLOAD_DATABASE_INFO);
+    }
+
 }

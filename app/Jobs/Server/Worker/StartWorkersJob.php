@@ -12,11 +12,12 @@ namespace App\Jobs\Server\Worker;
 use App\Definitions\Worker;
 use App\Exceptions\WorkerException;
 use App\Jobs\Job;
+use App\Traits\CustomConsoleOutput;
 use Illuminate\Support\Collection;
 
 class StartWorkersJob extends Job
 {
-
+    use CustomConsoleOutput;
 
     /**
      * Variable used to hold the number of gearman workers
@@ -41,6 +42,7 @@ class StartWorkersJob extends Job
 
         /* Process input data */
         $this->processInputData($inputData);
+
     }
 
     /**
@@ -112,7 +114,7 @@ class StartWorkersJob extends Job
             $pid = pcntl_fork();
 
             if (!$pid) {
-                print "Worker $workerId started" . PHP_EOL;
+                $this->info("[Worker $workerId] Started");
                 while ($worker->work()) {
                 }
                 exit($workerId);
@@ -121,7 +123,7 @@ class StartWorkersJob extends Job
 
         while (pcntl_waitpid(0, $status) != -1) {
             $status = pcntl_wexitstatus($status);
-            echo "Worker $status completed " . PHP_EOL;
+            $this->warn("[Worker $status] Completed");
         }
     }
 }

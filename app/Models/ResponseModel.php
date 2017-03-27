@@ -75,6 +75,33 @@ class ResponseModel extends NonPersistentModel
     }
 
     /**
+     * Getter for status
+     * @return bool
+     */
+    public function getStatus(): bool
+    {
+        return $this->getAttribute(self::RESPONSE_STATUS_FIELD);
+    }
+
+    /**
+     * Getter for message
+     * @return string
+     */
+    public function getMessage(): string
+    {
+        return $this->getAttribute(self::RESPONSE_MESSAGE_FIELD);
+    }
+
+    /**
+     * Getter for content
+     * @return mixed
+     */
+    public function getContent()
+    {
+        return $this->getAttribute(self::RESPONSE_CONTENT_FIELD);
+    }
+
+    /**
      * Internal function used to set status either "success" or "failure"
      * @param bool $status
      */
@@ -94,7 +121,7 @@ class ResponseModel extends NonPersistentModel
 
     /**
      * Internal function used to set response content
-     * @param $content
+     * @param mixed $content
      */
     protected function setContent($content)
     {
