@@ -16,6 +16,9 @@ abstract class DefaultTask
 {
     use CustomConsoleOutput;
 
+    private $startTime = null;
+    private $endTime = null;
+
     /**
      * Function used to init fields
      * @param GearmanJob $job
@@ -42,9 +45,28 @@ abstract class DefaultTask
      * Short function used to announce each task
      * @param int $id
      */
-    protected function announce(int $id)
+    protected function announceStart(int $id)
     {
-        $message = "[Worker $id] Received task: " . class_basename($this);
+        /* Start timer for performance benchmarks */
+        $this->startTime = microtime(true);
+
+        $id = str_pad($id, 2, 0, STR_PAD_LEFT);
+
+        $message = "[Worker $id] Started task: " . class_basename($this);
+        $this->comment($message);
+    }
+
+    protected function announceEnd(int $id)
+    {
+        $elapsed = '';
+        $this->endTime = microtime(true);
+        $id = str_pad($id, 2, 0, STR_PAD_LEFT);
+
+        if (!is_null($this->startTime)) {
+            $elapsed = " (Elapsed: " . ($this->endTime - $this->startTime) . ")";
+        }
+
+        $message = "[Worker $id] Finished task: " . class_basename($this) . $elapsed;
         $this->comment($message);
     }
 }

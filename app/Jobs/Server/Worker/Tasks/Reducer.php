@@ -28,11 +28,13 @@ class Reducer extends DefaultTask
      */
     public function reduce(GearmanJob $job)
     {
-        $this->announce($job->unique());
+        $this->announceStart($job->unique());
 
         $this->init($job);
 
         $data = $this->fetchData();
+
+        $this->announceEnd($job->unique());
 
         return $this->encodeReturnData($data);
     }

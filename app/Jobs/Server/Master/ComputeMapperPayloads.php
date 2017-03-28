@@ -164,13 +164,31 @@ class ComputeMapperPayloads extends Job
         /* Iterate through payloads data and compute PayloadModels */
         foreach ($payloads as $databaseId => $tableInformation) {
             foreach ($tableInformation as $tableName => $partitions) {
-                /* Compute payload query */
-                $payloadQuery = $this->computePayloadQuery($tableName, $partitions);
+                if (config('common.force_splitting_by_partitions')) {
+                    $maxPartitions = config('common.partition_granularity');
 
-                $payloadModels[] = new MapperPayloadModel(
-                    $this->databaseConnections[$databaseId],
-                    $payloadQuery
-                );
+                    $offset = 0;
+                    while ($currentPartitions = array_slice($partitions, $offset, $maxPartitions)) {
+                        /* Compute payload query */
+                        $payloadQuery = $this->computePayloadQuery($tableName, $currentPartitions);
+
+                        $payloadModels[] = new MapperPayloadModel(
+                            $this->databaseConnections[$databaseId],
+                            $payloadQuery
+                        );
+
+                        $offset += $maxPartitions;
+                    }
+
+                } else {
+                    /* Compute payload query */
+                    $payloadQuery = $this->computePayloadQuery($tableName, $partitions);
+
+                    $payloadModels[] = new MapperPayloadModel(
+                        $this->databaseConnections[$databaseId],
+                        $payloadQuery
+                    );
+                }
             }
         }
 
@@ -186,7 +204,7 @@ class ComputeMapperPayloads extends Job
     protected function computePayloadQuery(string $tableName, array $partitions): string
     {
         if (!empty($partitions)) {
-            $tableName .= " PARTITION (" . implode(", ", $partitions). ") ";
+            $tableName .= " PARTITION (" . implode(", ", $partitions) . ") ";
         }
 
         $payloadQuery = $this->CQueryModel->injectTableIntoQuery($tableName);

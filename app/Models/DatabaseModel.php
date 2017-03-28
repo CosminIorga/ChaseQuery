@@ -36,6 +36,7 @@ class DatabaseModel extends NonPersistentModel
      */
     const ALLOWED_ATTRIBUTES = [
         self::DATABASE_ID,
+        self::DATABASE_DRIVER,
         self::DATABASE_NAME,
         self::DATABASE_LOAD,
         self::DATABASE_FINAL_LOAD,

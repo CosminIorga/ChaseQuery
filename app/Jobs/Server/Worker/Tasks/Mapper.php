@@ -35,11 +35,13 @@ class Mapper extends DefaultTask
      */
     public function map(GearmanJob $job)
     {
-        $this->announce((int) $job->unique());
+        $this->announceStart((int) $job->unique());
 
         $this->init($job);
 
         $data = $this->fetchData();
+
+        $this->announceEnd((int) $job->unique());
 
         return $this->encodeReturnData($data);
     }
